@@ -1,0 +1,4 @@
+# ignore anything aithout init.el
+*
+!init.el
+!.gitignore
