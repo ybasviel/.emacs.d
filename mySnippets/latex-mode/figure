@@ -1,0 +1,11 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: figure
+# key: \fig
+# binding: direct-keybinding
+# --
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=${1:0.9}\linewidth]{$2}
+  \caption{$3}
+  \label{$4}
+\end{figure}

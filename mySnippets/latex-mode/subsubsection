@@ -2,6 +2,6 @@
 # name: subsubsection
 # key: ssse
 # --
-\subsubsection{${1:subsubsection-name}}
+\subsubsection{$1}
 
 $0
