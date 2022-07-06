@@ -35,6 +35,7 @@
 \usepackage{multicol}
 \usepackage{url}
 \usepackage{comment}
+\usepackage{wrapfig}
 
 \pagestyle{empty}
 

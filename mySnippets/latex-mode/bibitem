@@ -1,0 +1,6 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: bibitem
+# key: \bibitem
+# binding: direct-keybinding
+# --
+\bibitem{$1} $2
