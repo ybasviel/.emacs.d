@@ -1,0 +1,22 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: double-figures
+# key: \fig
+# binding: direct-keybinding
+# --
+\begin{figure}[H]
+  \centering
+  \begin{minipage}[b]{${1:0.45}\linewidth}
+    \centering
+    \includegraphics[width=$2\linewidth]{$3}
+    \subcaption{$4}
+    \label{$5}
+  \end{minipage}
+  \begin{minipage}[b]{$1\linewidth}
+    \centering
+    \includegraphics[width=$2\linewidth]{$6}
+    \subcaption{$7}
+    \label{$8}
+  \end{minipage}
+  \caption{$9}
+  \label{$10}
+\end{figure}

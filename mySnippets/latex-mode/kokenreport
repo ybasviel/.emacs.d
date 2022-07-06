@@ -1,0 +1,104 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: koken report template
+# key: \kokenreport
+# binding: direct-keybinding
+# --
+\documentclass[dvipdfmx,a4j,twocolumn,10pt,uplatex]{jsarticle}
+
+\usepackage[top=1.3in, hmargin=0.787in, bottom=1.18in]{geometry}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\rhead{工学研究部 部報$1号}
+\chead{}
+\lhead{}
+\def\footrulewidth{1pt}
+\lfoot{電気通信大学 工学研究部}
+\cfoot{}
+\rfoot{\url{https://www.koken.club.uec.ac.jp}\\\url{ueckoken@gmail.com}}
+\renewcommand{\footrulewidth}{0.4pt}
+
+\renewcommand{\abstractname}{}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{otf}
+\usepackage[prefernoncjk]{pxcjkcat}
+\usepackage{lmodern}
+\usepackage{verbatim}
+\usepackage{listings}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[dvipdfmx]{graphicx}
+\usepackage[dvipdfmx]{color}
+\usepackage{here}
+\usepackage{multicol}
+\usepackage{url}
+\usepackage{comment}
+
+\pagestyle{empty}
+
+%% \maketitleの余白を調整
+\makeatletter
+\renewcommand{\@maketitle}{\newpage
+% \null
+% \vskip 2em
+\begin{center}
+{\LARGE \@title \par} \vskip 1.5em {\large \lineskip .5em
+\begin{tabular}[t]{c}\@author
+\end{tabular}\par}
+\vskip 1em {\large \@date} \end{center}
+\par
+\vskip 1.5em}
+\makeatother
+
+\usepackage{reledmac}
+\usepackage{setspace}
+\usepackage{etoolbox}
+%\arrangementX[A]{twocol}
+\colalignX{\justifying}
+\makeatletter
+\bhooknoteX[A]{\setstretch {\setspace@singlespace}}
+\bhookgroupX[A]{\setstretch {\setspace@singlespace}}
+\makeatother
+\let\footnote\footnoteA
+
+
+%%%%%%%
+%動かないときは
+%sudo mktexlsr
+%%%%%%%
+\usepackage{listings,jlisting} %日本語のコメントアウト用
+%ここからソースコードの表示に関する設定
+\lstset{
+  keepspaces=true,
+  basicstyle={\ttfamily},
+  identifierstyle={\small},
+  commentstyle={\smallitshape},
+  keywordstyle={\small\bfseries},
+  ndkeywordstyle={\small},
+  stringstyle={\small\ttfamily},
+  frame={tb},
+  breaklines=true,
+  columns=[l]{fullflexible},
+  numbers=left,
+  xrightmargin=0zw,
+  xleftmargin=3zw,
+  numberstyle={\scriptsize},
+  stepnumber=1,
+  numbersep=1zw,
+  lineskip=-0.5ex
+}
+\renewcommand{\lstlistingname}{コード} %コードのキャプション
+
+\title{$2}
+\date{${3:\today}}
+\author{$4}
+
+\begin{document}
+\maketitle
+\pagestyle{fancy}
+
+$0
+
+\end{document}

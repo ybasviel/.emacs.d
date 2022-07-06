@@ -1,0 +1,81 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: uec report template
+# key: \uecreport
+# binding: direct-keybinding
+# --
+\documentclass[a4j,11pt,uplatex]{jsarticle}
+\usepackage[dvipdfmx]{graphicx} %図を入れるやつ
+\usepackage[dvipdfmx]{color}
+\usepackage[version=3]{mhchem}  %化学式のやつ
+\usepackage{url}  %URLのやつ
+\usepackage{siunitx}  %SI単位のやつ
+\usepackage{amssymb} %にありーいこーるのやつ
+\usepackage{here}
+\usepackage{amsmath} %連立方程式
+\usepackage{mathtools}
+\usepackage{empheq}
+\usepackage[subrefformat=parens]{subcaption}
+
+\setlength{\textwidth}{\paperwidth}
+\addtolength{\textwidth}{-40truemm}
+\setlength{\textheight}{\paperheight}
+\addtolength{\textheight}{-45truemm}
+
+\setlength{\topmargin}{-10.4truemm}
+\setlength{\evensidemargin}{-5.4truemm}
+\setlength{\oddsidemargin}{-5.4truemm}
+\setlength{\headheight}{17pt}
+\setlength{\headsep}{10mm}
+\addtolength{\headsep}{-17pt}
+\setlength{\footskip}{5mm}
+
+\newcommand{\Si}[2]{\SI[per-mode=symbol]{#1}{#2}}
+
+
+%%%%%%%
+%動かないときは
+%sudo mktexlsr
+%%%%%%%
+\usepackage{listings,jlisting} %日本語のコメントアウト用
+%ここからソースコードの表示に関する設定
+\lstset{
+  keepspaces=true,
+  basicstyle={\ttfamily},
+  identifierstyle={\small},
+  commentstyle={\smallitshape},
+  keywordstyle={\small\bfseries},
+  ndkeywordstyle={\small},
+  stringstyle={\small\ttfamily},
+  frame={tb},
+  breaklines=true,
+  columns=[l]{fullflexible},
+  numbers=left,
+  xrightmargin=0zw,
+  xleftmargin=3zw,
+  numberstyle={\scriptsize},
+  stepnumber=1,
+  numbersep=1zw,
+  lineskip=-0.5ex
+}
+\renewcommand{\lstlistingname}{コード} %コードのキャプション
+
+\title{$1}
+\author{$2}
+\date{\today}
+
+\newcommand{\maketitlepage}{
+  \begin{titlepage}
+    \maketitle
+  \end{titlepage}
+}
+
+\begin{document}
+\maketitle
+
+$0
+
+\begin{thebibliography}{99}
+  \bibitem{aaa} aaa 
+\end{thebibliography}
+
+\end{document}

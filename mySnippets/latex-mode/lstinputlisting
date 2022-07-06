@@ -1,0 +1,6 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: lstinputlisting
+# key: \lst
+# binding: direct-keybinding
+# --
+\lstinputlisting[caption=$1,label=$2]{$3}

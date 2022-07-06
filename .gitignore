@@ -1,4 +1,3 @@
-# ignore anything without init.el
-*
-!init.el
-!.gitignore
+auto-save-list/
+el-get/
+elisp/
