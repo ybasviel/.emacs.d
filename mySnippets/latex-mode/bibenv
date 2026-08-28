@@ -1,8 +1,0 @@
-# -*- mode: snippet; require-final-newline: nil -*-
-# name: bibenv
-# key: \bibenv
-# binding: direct-keybinding
-# --
-\begin{thebibliography}{99}
-  $0
-\end{thebibliography}

@@ -1,3 +1,7 @@
-auto-save-list/
-el-get/
-elisp/
+# 既定: すべて無視
+*
+
+# 追跡するのは以下だけ
+!*.el
+!*.md
+!.gitignore
