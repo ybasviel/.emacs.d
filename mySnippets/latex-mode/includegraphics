@@ -1,5 +1,0 @@
-# -*- mode: snippet; require-final-newline: nil -*-
-# name: includegraphics
-# key: inc
-# --
-\includegraphics[width=${1:0.9}\linewidth]{$2}

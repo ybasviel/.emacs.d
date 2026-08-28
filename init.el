@@ -1,137 +1,251 @@
-;; el-get init
-(add-to-list 'load-path "~/.emacs.d/el-get/el-get")
+;;; init.el --- Modern minimal Emacs -*- lexical-binding: t; -*-
 
-(unless (require 'el-get nil 'noerror)
-  (with-current-buffer
-      (url-retrieve-synchronously
-       "https://raw.githubusercontent.com/dimitri/el-get/master/el-get-install.el")
-    (goto-char (point-max))
-    (eval-print-last-sexp)))
+;; ============================================================
+;; Elpaca bootstrap (公式README準拠)
+;; ============================================================
+(defvar elpaca-installer-version 0.11)
+(defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
+(defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
+(defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
+(defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
+                              :ref nil :depth 1 :inherit ignore
+                              :files (:defaults "elpaca-test.el" (:exclude "extensions"))
+                              :build (:not elpaca--activate-package)))
+(let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
+       (build (expand-file-name "elpaca/" elpaca-builds-directory))
+       (order (cdr elpaca-order))
+       (default-directory repo))
+  (add-to-list 'load-path (if (file-exists-p build) build repo))
+  (unless (file-exists-p repo)
+    (make-directory repo t)
+    (when (< emacs-major-version 28) (require 'subr-x))
+    (condition-case-unless-debug err
+        (if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
+                  ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
+                                                  ,@(when-let* ((depth (plist-get order :depth)))
+                                                      (list (format "--depth=%d" depth) "--no-single-branch"))
+                                                  ,(plist-get order :repo) ,repo))))
+                  ((zerop (call-process "git" nil buffer t "checkout"
+                                        (or (plist-get order :ref) "--"))))
+                  (emacs (concat invocation-directory invocation-name))
+                  ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+                                        "--eval" "(byte-recompile-directory \".\" 0 'force)")))
+                  ((require 'elpaca))
+                  ((elpaca-generate-autoloads "elpaca" repo)))
+            (progn (message "%s" (buffer-string)) (kill-buffer buffer))
+          (error "%s" (with-current-buffer buffer (buffer-string))))
+      ((error) (warn "%s" err) (delete-directory repo 'recursive))))
+  (unless (require 'elpaca-autoloads nil t)
+    (require 'elpaca)
+    (elpaca-generate-autoloads "elpaca" repo)
+    (load "./elpaca-autoloads")))
+(add-hook 'after-init-hook #'elpaca-process-queues)
+(elpaca `(,@elpaca-order))
 
-(add-to-list 'el-get-recipe-path "~/.emacs.d/el-get-user/recipes")
-(setq el-get-dir "~/.emacs.d/elisp")
-(el-get 'sync)
+;; use-package を elpaca 経由でインストール、以降 :ensure t は elpaca に流れる
+(elpaca elpaca-use-package
+  (elpaca-use-package-mode))
+(elpaca-wait)
 
-;; installed packages
-;; autoconf and markdown must be installed additional
-;; >> sudo apt install autoconf markdown
-(el-get-bundle auctex)
-(el-get-bundle auctex-latexmk)
-(el-get-bundle markdown-preview-mode)
-(el-get-bundle markdown-mode)
-(el-get-bundle uuidgen)
-(el-get-bundle websocket)
-(el-get-bundle web-server)
-(el-get-bundle uuidgen)
-(el-get-bundle yasnippet)
-(el-get-bundle uuidgen)
-(el-get-bundle company-mode)
-(el-get-bundle company-quickhelp)
-(el-get-bundle company-mode)
+;; ============================================================
+;; GUI Emacs はログインシェルの PATH を継承しないので、
+;; mise の shim (~/.local/share/mise/shims) を含む PATH を取り込む
+;; ============================================================
+(use-package exec-path-from-shell
+  :ensure t
+  :if (memq window-system '(mac ns x pgtk))
+  :init
+  (setq exec-path-from-shell-arguments '("-l"))
+  (dolist (v '("MYSQL_USER" "MYSQL_PASSWORD" "MYSQL_PWD"
+               "MYSQL_HOST" "MYSQL_PORT" "MYSQL_DATABASE"))
+    (add-to-list 'exec-path-from-shell-variables v))
+  :config
+  (exec-path-from-shell-initialize))
 
+;; ============================================================
+;; Sane defaults
+;; ============================================================
+(setq-default indent-tabs-mode nil
+              tab-width 2
+              fill-column 100)
 
-;; line numbrs
-(global-display-line-numbers-mode t)
-(custom-set-variables '(display-line-numbers-width-start t))
+(setq make-backup-files nil
+      auto-save-default nil
+      create-lockfiles nil
+      custom-file (expand-file-name "custom.el" user-emacs-directory)
+      use-short-answers t
+      require-final-newline t
+      sentence-end-double-space nil
+      read-process-output-max (* 1024 1024))
 
-;; no tab
-(setq-default indent-tabs-mode nil)
+(when (file-exists-p custom-file) (load custom-file))
 
-;; indent using 2 spaces
-(setq-default tab-width 2)
+;; 外部からのファイル変更をリアルタイム反映 (inotify/kqueue で即時、
+;; フォールバック時のポーリングも 1 秒に短縮)
+(global-auto-revert-mode 1)
+(setq global-auto-revert-non-file-buffers t   ; dired 等も自動更新
+      auto-revert-use-notify t                ; inotify/kqueue を使う
+      auto-revert-avoid-polling t             ; 通知が使えるなら polling しない
+      auto-revert-interval 1
+      auto-revert-verbose nil)
+(delete-selection-mode 1)
+(recentf-mode 1)
+(savehist-mode 1)
+(save-place-mode 1)
+(when (fboundp 'pixel-scroll-precision-mode)
+  (pixel-scroll-precision-mode 1))
 
-;; visualisation of tab and space
-(defface my-face-b-1 '((t (:background "medium aquamarine"))) nil)
-(defface my-face-b-2 '((t (:background "gray26"))) nil)
-(defface my-face-u-1 '((t (:foreground "SteelBlue" :underline t))) nil)
-(defvar my-face-b-1 'my-face-b-1)
-(defvar my-face-b-2 'my-face-b-2)
-(defvar my-face-u-1 'my-face-u-1)
-(defadvice font-lock-mode (before my-font-lock-mode ())
-  (font-lock-add-keywords
-   major-mode
-   '(
-     ("　" 0 my-face-b-1 append)
-     ("\t" 0 my-face-b-2 append)
-     ("[ ]+$" 0 my-face-u-1 append)
-     )))
-(ad-enable-advice 'font-lock-mode 'before 'my-font-lock-mode)
-(ad-activate 'font-lock-mode)
-(add-hook 'find-file-hooks '(lambda ()
-(if font-lock-mode
-nil
-(font-lock-mode t))) t)
+;; 分割を避ける: 新規バッファは同ウィンドウで開く
+(setq display-buffer-base-action
+      '((display-buffer-reuse-window display-buffer-same-window))
+      even-window-sizes nil)
 
-;; no backup files *.~
-(setq make-backup-files nil)
-;; no backup files .#* 
-(setq auto-save-default nil)
+;; ============================================================
+;; UI
+;; ============================================================
+(column-number-mode 1)
+(global-display-line-numbers-mode 1)
+(global-tab-line-mode 1)
 
-;; yasnippet init
-(setq yas-snippet-dirs
-      '("~/.emacs.d/mySnippets"))
-(yas-global-mode 1)
+;; ============================================================
+;; Whitespace 可視化: tab / space / trailing を別 face で色分け
+;;   indent-tabs-mode nil なので、混入した TAB を目立たせる意味も兼ねる
+;; ============================================================
+(use-package whitespace
+  :ensure nil
+  :hook (prog-mode . whitespace-mode)
+  :custom
+  (whitespace-style '(face tabs spaces tab-mark space-mark trailing))
+  (whitespace-display-mappings
+   '((space-mark ?\  [?·])
+     (tab-mark   ?\t [?» ?\t]))))
 
+;; ============================================================
+;; Minibuffer completion
+;; ============================================================
+(use-package vertico
+  :ensure t
+  :init (vertico-mode))
 
+(use-package orderless
+  :ensure t
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-overrides '((file (styles basic partial-completion)))))
 
-;; settings for markdown preview mode
-(setq auto-mode-alist
-   (cons '("\.md" . markdown-mode) auto-mode-alist))
-(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
-(setq markdown-preview-stylesheets nil)
+(use-package marginalia
+  :ensure t
+  :init (marginalia-mode))
 
+(use-package consult
+  :ensure t
+  :bind (("C-x b"   . consult-buffer)
+         ("C-x C-r" . consult-recent-file)
+         ("M-g g"   . consult-goto-line)
+         ("M-g i"   . consult-imenu)
+         ("M-s r"   . consult-ripgrep)
+         ("M-s f"   . consult-fd)
+         ("M-y"     . consult-yank-pop)))
 
+;; ============================================================
+;; In-buffer completion
+;; ============================================================
+(use-package corfu
+  :ensure t
+  :custom
+  (corfu-auto t)
+  (corfu-auto-delay 0.1)
+  (corfu-auto-prefix 2)
+  (corfu-cycle t)
+  :init (global-corfu-mode))
 
-;; LaTeX auto compile
-(autoload 'smart-compile "smart-compile.el" t)
-(eval-when-compile (require 'smart-compile))
-(declare-function smart-compile-string "smart-compile")
-(defun run-latexmk ()
-  (when (string-match ".tex$" (buffer-file-name))
-    (let ((buf (get-buffer "*Background TeX proccess*")))
-      (if (bufferp buf) (kill-buffer buf)) ) ;; flush previous log
-    (require 'smart-compile) ;; for smart-compile-string
-    (start-process-shell-command
-     "Background TeX" "*Background TeX proccess*"
-     (smart-compile-string "latexmk %f"))))
-(define-minor-mode AutoTeX-mode
-  "Mode for compiling latex sources and creating PDFs after saving."
-  :global nil
-  :lighter " Auto"
-  (if AutoTeX-mode
-      (add-hook 'after-save-hook 'run-latexmk t t)
-    (remove-hook 'after-save-hook 'run-latexmk t)))
+(use-package cape
+  :ensure t
+  :init
+  (add-hook 'completion-at-point-functions #'cape-dabbrev)
+  (add-hook 'completion-at-point-functions #'cape-file))
 
-(add-hook 'TeX-mode-hook #'(lambda () (AutoTeX-mode 1)))
+;; ============================================================
+;; Tree-sitter (Emacs 29+ built-in、モード自動セットアップだけ elpaca 経由)
+;; ============================================================
+(use-package treesit-auto
+  :ensure t
+  :custom (treesit-auto-install 'prompt)
+  :config
+  (treesit-auto-add-to-auto-mode-alist 'all)
+  (global-treesit-auto-mode))
 
+;; ============================================================
+;; LSP (eglot は built-in)
+;; ============================================================
+(use-package eglot
+  :ensure nil
+  :hook ((go-ts-mode ruby-ts-mode python-ts-mode
+          typescript-ts-mode tsx-ts-mode) . eglot-ensure)
+  :custom
+  (eglot-autoshutdown t)
+  (eglot-events-buffer-size 0)
+  (eglot-sync-connect nil)
+  :bind (:map eglot-mode-map
+              ("M-." . xref-find-definitions)
+              ("M-?" . xref-find-references)
+              ("C-c r" . eglot-rename)
+              ("C-c a" . eglot-code-actions)))
 
+;; ============================================================
+;; Git / diff
+;; ============================================================
+;; 組み込み transient は古く magit が要求する 0.13+ を満たさないので
+;; 先に ELPA 版をインストール&ロードして built-in を上書きする
+(use-package transient :ensure t :demand t)
+(elpaca-wait)
 
-;; company
-(require 'company)
-(global-company-mode) 
-(setq company-transformers '(company-sort-by-backend-importance))
-(setq company-idle-delay 0)
-(setq company-minimum-prefix-length 3)
-(setq company-selection-wrap-around t)
-(setq completion-ignore-case t)
-(setq company-dabbrev-downcase nil)
-(global-set-key (kbd "C-M-i") 'company-complete)
-(define-key company-active-map (kbd "C-n") 'company-select-next)
-(define-key company-active-map (kbd "C-p") 'company-select-previous)
-(define-key company-search-map (kbd "C-n") 'company-select-next)
-(define-key company-search-map (kbd "C-p") 'company-select-previous)
-(define-key company-active-map (kbd "C-s") 'company-filter-candidates)
-(define-key company-active-map (kbd "C-i") 'company-complete-selection)
-(define-key company-active-map [tab] 'company-complete-selection)
-(define-key company-active-map (kbd "C-f") 'company-complete-selection)
-(define-key emacs-lisp-mode-map (kbd "C-M-i") 'company-complete)
+(use-package magit
+  :ensure t
+  :bind ("C-x g" . magit-status))
 
-;; company works with yasnippet
-(defvar company-mode/enable-yas t
-  "Enable yasnippet for all backends.")
-(defun company-mode/backend-with-yas (backend)
-  (if (or (not company-mode/enable-yas) (and (listp backend) (member 'company-yasnippet backend)))
-      backend
-    (append (if (consp backend) backend (list backend))
-            '(:with company-yasnippet))))
-(setq company-backends (mapcar #'company-mode/backend-with-yas company-backends))
+(use-package diff-hl
+  :ensure t
+  :init (global-diff-hl-mode)
+  :hook ((magit-pre-refresh  . diff-hl-magit-pre-refresh)
+         (magit-post-refresh . diff-hl-magit-post-refresh)))
+
+(use-package difftastic
+  :ensure t
+  :after magit
+  :config
+  (with-eval-after-load 'magit-diff
+    (transient-append-suffix 'magit-diff '(-1 -1)
+      [("D" "Difftastic diff (dwim)" difftastic-magit-diff)
+       ("S" "Difftastic show"        difftastic-magit-show)])))
+
+;; ============================================================
+;; SQL
+;;   - sql.el / sqlite-mode は built-in
+;;   - 環境変数 MYSQL_USER / MYSQL_PASSWORD (or MYSQL_PWD) /
+;;     MYSQL_HOST / MYSQL_PORT / MYSQL_DATABASE から local-mysql 接続を作る
+;;   - M-x sql-mysql-local で即時接続
+;; ============================================================
+(use-package sql
+  :ensure nil
+  :custom
+  (sql-mysql-login-params '(user password server database port))
+  (sql-connection-alist
+   '((local-mysql
+      (sql-product 'mysql)
+      (sql-user     (getenv "MYSQL_USER"))
+      (sql-password (or (getenv "MYSQL_PASSWORD") (getenv "MYSQL_PWD")))
+      (sql-server   (or (getenv "MYSQL_HOST") "127.0.0.1"))
+      (sql-port     (string-to-number (or (getenv "MYSQL_PORT") "3306")))
+      (sql-database (or (getenv "MYSQL_DATABASE") "")))))
+  :config
+  (defun sql-mysql-local ()
+    "MYSQL_USER / MYSQL_PASSWORD (or MYSQL_PWD) / MYSQL_HOST /
+MYSQL_PORT / MYSQL_DATABASE を読んで local MySQL に接続する。"
+    (interactive)
+    (unless (getenv "MYSQL_USER")
+      (user-error "MYSQL_USER が未設定です"))
+    (sql-connect 'local-mysql)))
+
+(provide 'init)
+;;; init.el ends here
