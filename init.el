@@ -176,12 +176,24 @@
   (global-treesit-auto-mode))
 
 ;; ============================================================
+;; Web (Svelte)
+;;   .svelte を編集するための major-mode。LSP は下の eglot 側で紐付け
+;; ============================================================
+(use-package svelte-mode
+  :ensure t
+  :mode ("\\.svelte\\'" . svelte-mode))
+
+;; ============================================================
 ;; LSP (eglot は built-in)
+;;   必要な language server (mise/npm でグローバルに入れておく):
+;;     npm i -g typescript typescript-language-server   ; React (ts/tsx/js/jsx)
+;;     npm i -g svelte-language-server                  ; Svelte
 ;; ============================================================
 (use-package eglot
   :ensure nil
   :hook ((go-ts-mode ruby-ts-mode python-ts-mode
-          typescript-ts-mode tsx-ts-mode) . eglot-ensure)
+          typescript-ts-mode tsx-ts-mode
+          svelte-mode) . eglot-ensure)
   :custom
   (eglot-autoshutdown t)
   (eglot-events-buffer-size 0)
@@ -190,7 +202,10 @@
               ("M-." . xref-find-definitions)
               ("M-?" . xref-find-references)
               ("C-c r" . eglot-rename)
-              ("C-c a" . eglot-code-actions)))
+              ("C-c a" . eglot-code-actions))
+  :config
+  (add-to-list 'eglot-server-programs
+               '(svelte-mode . ("svelteserver" "--stdio"))))
 
 ;; ============================================================
 ;; Git / diff
