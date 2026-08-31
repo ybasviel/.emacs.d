@@ -83,6 +83,23 @@ export MYSQL_DATABASE=myapp_dev
 | `M-g i` | imenu でシンボルジャンプ |
 | `M-.` / `M-?` | 定義 / 参照 (eglot) |
 | `C-c r` / `C-c a` | rename / code-action |
-| `C-x g` | magit-status |
+| `C-c C-b` / `C-c C-p` | 左 / 前のタブへ移動 |
+| `C-c C-f` / `C-c C-n` | 右 / 次のタブへ移動 |
+| `C-x g` | Magit status を開く |
 | `D` (magit-diff内) | difftastic diff |
 | `C-g` | キャンセル |
+
+### Git の差分ファイル一覧
+
+`C-x g` で Magit status を開く。
+作業ツリーの差分ファイルは `Unstaged changes`、ステージ済みの差分ファイルは
+`Staged changes` に表示される。
+`TAB` でカーソル位置の差分を開閉できる。
+
+### コミットの差分ファイル一覧
+
+1. `C-x g` で Magit status を開く
+2. `l l` で現在のブランチのログを開く
+3. `n` / `p` でコミットを選び、`RET` を押す
+4. `S-TAB` で表示段階を切り替え、差分をファイル名だけの一覧に畳む
+5. 確認したいファイルへ移動し、`TAB` で差分を開く

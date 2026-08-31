@@ -103,9 +103,25 @@
 ;; ============================================================
 ;; UI
 ;; ============================================================
+(load-theme 'modus-vivendi t)
+
 (column-number-mode 1)
 (global-display-line-numbers-mode 1)
 (global-tab-line-mode 1)
+
+(defvar-keymap tab-line-navigation-mode-map
+  :doc "Keymap for switching tab-line tabs while holding Control."
+  "C-c C-b" #'tab-line-switch-to-prev-tab
+  "C-c C-p" #'tab-line-switch-to-prev-tab
+  "C-c C-f" #'tab-line-switch-to-next-tab
+  "C-c C-n" #'tab-line-switch-to-next-tab)
+
+(define-minor-mode tab-line-navigation-mode
+  "Switch tab-line tabs with Control key sequences."
+  :global t
+  :keymap tab-line-navigation-mode-map)
+
+(tab-line-navigation-mode 1)
 
 ;; ============================================================
 ;; Whitespace 可視化: tab / space / trailing を別 face で色分け

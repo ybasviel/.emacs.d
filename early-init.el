@@ -4,9 +4,12 @@
 (setq package-enable-at-startup nil)
 
 ;; フレーム描画前にUIを削っておく（後から消すよりチラつかない）
-(menu-bar-mode -1)
-(tool-bar-mode -1)
-(scroll-bar-mode -1)
+(when (fboundp 'menu-bar-mode)
+  (menu-bar-mode -1))
+(when (fboundp 'tool-bar-mode)
+  (tool-bar-mode -1))
+(when (fboundp 'scroll-bar-mode)
+  (scroll-bar-mode -1))
 
 (setq inhibit-startup-screen t
       initial-scratch-message nil
