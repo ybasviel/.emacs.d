@@ -88,6 +88,7 @@ export MYSQL_DATABASE=myapp_dev
 | `C-x g` | Magit status を開く |
 | `D` (magit-diff内) | difftastic diff |
 | `C-g` | キャンセル |
+| `C-x h, M-w`| 全文コピー |
 
 ### Git の差分ファイル一覧
 
